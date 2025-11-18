@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor GeoJSON - Programação Anual de Conservação</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
+    <style>
+:root {
+  /* Primitive Color Tokens */
+  --color-white: rgba(255, 255, 255, 1);
+  --color-black: rgba(0, 0, 0, 1);
+  --color-cream-50: rgba(252, 252, 249, 1);
+  --color-cream-100: rgba(255, 255, 253, 1);
+  --color-gray-200: rgba(245, 245, 245, 1);
+  --color-gray-300: rgba(167, 169, 169, 1);
+  --color-gray-400: rgba(119, 124, 124, 1);
+  --color-slate-500: rgba(98, 108, 113, 1);
+  --color-brown-600: rgba(94, 82, 64, 1);
+  --color-charcoal-700: rgba(31, 33, 33, 1);
+  --color-charcoal-800: rgba(38, 40, 40, 1);
+  --color-slate-900: rgba(19, 52, 59, 1);
+  --color-teal-300: rgba(50, 184, 198, 1);
+  --color-teal-400: rgba(45, 166, 178, 1);
+  --color-teal-500: rgba(33, 128, 141, 1);
+  --color-teal-600: rgba(29, 116, 128, 1);
+  --color-teal-700: rgba(26, 104, 115, 1);
+  --color-teal-800: rgba(41, 150, 161, 1);
+  --color-red-400: rgba(255, 84, 89, 1);
+  --color-red-500: rgba(192, 21, 47, 1);
+  --color-orange-400: rgba(230, 129, 97, 1);
+  --color-orange-500: rgba(168, 75, 47, 1);
+
+  --color-brown-600-rgb: 94, 82, 64;
+  --color-teal-500-rgb: 33, 128, 141;
+  --color-slate-900-rgb: 19, 52, 59;
+  --color-slate-500-rgb: 98, 108, 113;
+  --color-red-500-rgb: 192, 21, 47;
+  --color-red-400-rgb: 255, 84, 89;
+  --color-orange-500-rgb: 168, 75, 47;
+  --color-orange-400-rgb: 230, 129, 97;
+
+  --color-bg-1: rgba(59, 130, 246, 0.08);
+  --color-bg-2: rgba(245, 158, 11, 0.08);
+  --color-bg-3: rgba(34, 197, 94, 0.08);
+  --color-bg-4: rgba(239, 68, 68, 0.08);
+  --color-bg-5: rgba(147, 51, 234, 0.08);
+  --color-bg-6: rgba(249, 115, 22, 0.08);
+  --color-bg-7: rgba(236, 72, 153, 0.08);
+  --color-bg-8: rgba(6, 182, 212, 0.08);
+
+  --color-background: var(--color-cream-50);
+  --color-surface: var(--color-cream-100);
+  --color-text: var(--color-slate-900);
+  --color-text-secondary: var(--color-slate-500);
+  --color-primary: var(--color-teal-500);
+  --color-primary-hover: var(--color-teal-600);
+  --color-primary-active: var(--color-teal-700);
+  --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+  --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+  --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+  --color-btn-primary-text: var(--color-cream-50);
+  --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-error: var(--color-red-500);
+  --color-success: var(--color-teal-500);
+  --color-warning: var(--color-orange-500);
+  --color-info: var(--color-slate-500);
+  --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+  --color-select-caret: rgba(var(--color-slate-900-rgb), 0.8);
+
+  --focus-ring: 0 0 0 3px var(--color-focus-ring);
+  --focus-outline: 2px solid var(--color-primary);
+  --status-bg-opacity: 0.15;
+  --status-border-opacity: 0.25;
+
+  --color-success-rgb: 33, 128, 141;
+  --color-error-rgb: 192, 21, 47;
+  --color-warning-rgb: 168, 75, 47;
+  --color-info-rgb: 98, 108, 113;
+
+  --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 30px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 550;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --letter-spacing-tight: -0.01em;
+
+  --space-0: 0;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  --radius-sm: 6px;
+  --radius-base: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-gray-400-rgb: 119, 124, 124;
+    --color-teal-300-rgb: 50, 184, 198;
+    --color-gray-300-rgb: 167, 169, 169;
+    --color-gray-200-rgb: 245, 245, 245;
+
+    --color-bg-1: rgba(29, 78, 216, 0.15);
+    --color-bg-2: rgba(180, 83, 9, 0.15);
+    --color-bg-3: rgba(21, 128, 61, 0.15);
+    --color-bg-4: rgba(185, 28, 28, 0.15);
+    --color-bg-5: rgba(107, 33, 168, 0.15);
+    --color-bg-6: rgba(194, 65, 12, 0.15);
+    --color-bg-7: rgba(190, 24, 93, 0.15);
+    --color-bg-8: rgba(8, 145, 178, 0.15);
+
+    --color-background: var(--color-charcoal-700);
+    --color-surface: var(--color-charcoal-800);
+    --color-text: var(--color-gray-200);
+    --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+    --color-primary: var(--color-teal-300);
+    --color-primary-hover: var(--color-teal-400);
+    --color-primary-active: var(--color-teal-800);
+    --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+    --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+    --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
+    --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+    --color-error: var(--color-red-400);
+    --color-success: var(--color-teal-300);
+    --color-warning: var(--color-orange-400);
+    --color-info: var(--color-gray-300);
+    --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
+    --color-btn-primary-text: var(--color-slate-900);
+    --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+    --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
+    --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    --color-select-caret: rgba(var(--color-gray-200-rgb), 0.8);
+
+    --color-success-rgb: var(--color-teal-300-rgb);
+    --color-error-rgb: var(--color-red-400-rgb);
+    --color-warning-rgb: var(--color-orange-400-rgb);
+    --color-info-rgb: var(--color-gray-300-rgb);
+  }
+}
+
+@font-face {
+  font-family: 'FKGroteskNeue';
+  src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2') format('woff2');
+}
+
+html {
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Custom Styles */
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-24);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-32);
+  padding-bottom: var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header h1 {
+  margin: 0 0 var(--space-8) 0;
+  font-size: var(--font-size-3xl);
+  color: var(--color-text);
+}
+
+.header .subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-12);
+}
+
+.header .instructions {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
+}
+
+@media (max-width: 1024px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--space-16) 0;
+  color: var(--color-text);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-8);
+  margin-bottom: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-button {
+  padding: var(--space-8) var(--space-16);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.tab-button:hover {
+  color: var(--color-text);
+}
+
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.file-upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-32);
+  text-align: center;
+  background-color: var(--color-bg-1);
+  transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.file-upload-area:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-3);
+}
+
+.file-upload-area.dragover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-3);
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-label {
+  display: inline-block;
+  padding: var(--space-10) var(--space-20);
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.upload-label:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.upload-icon {
+  margin-bottom: var(--space-12);
+  font-size: var(--font-size-4xl);
+}
+
+textarea.form-control {
+  font-family: var(--font-family-mono);
+  min-height: 200px;
+  resize: vertical;
+}
+
+.preview-table-container {
+  margin-top: var(--space-16);
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.preview-table th,
+.preview-table td {
+  padding: var(--space-8);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.preview-table th {
+  background-color: var(--color-bg-2);
+  font-weight: var(--font-weight-semibold);
+  position: sticky;
+  top: 0;
+}
+
+.preview-table tr:last-child td {
+  border-bottom: none;
+}
+
+.form-group {
+  margin-bottom: var(--space-16);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--space-8);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.form-control:focus {
+  border-color: var(--color-primary);
+  outline: var(--focus-outline);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.radio-option input[type="radio"] {
+  margin-top: 2px;
+}
+
+.radio-option label {
+  cursor: pointer;
+  font-size: var(--font-size-base);
+}
+
+.coord-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  margin-top: var(--space-12);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) var(--space-20);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  border: none;
+  text-decoration: none;
+  position: relative;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background: var(--color-secondary-hover);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-group {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+}
+
+.geojson-output {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  min-height: 400px;
+  max-height: 600px;
+  overflow: auto;
+  background-color: var(--color-charcoal-800);
+  color: var(--color-gray-200);
+  padding: var(--space-16);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-border);
+  white-space: pre;
+  line-height: 1.5;
+}
+
+.status-message {
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-base);
+  margin-top: var(--space-16);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.status-message.success {
+  background-color: rgba(var(--color-success-rgb), var(--status-bg-opacity));
+  color: var(--color-success);
+  border: 1px solid rgba(var(--color-success-rgb), var(--status-border-opacity));
+}
+
+.status-message.error {
+  background-color: rgba(var(--color-error-rgb), var(--status-bg-opacity));
+  color: var(--color-error);
+  border: 1px solid rgba(var(--color-error-rgb), var(--status-border-opacity));
+}
+
+.status-message.warning {
+  background-color: rgba(var(--color-warning-rgb), var(--status-bg-opacity));
+  color: var(--color-warning);
+  border: 1px solid rgba(var(--color-warning-rgb), var(--status-border-opacity));
+}
+
+.status-message.info {
+  background-color: rgba(var(--color-info-rgb), var(--status-bg-opacity));
+  color: var(--color-info);
+  border: 1px solid rgba(var(--color-info-rgb), var(--status-border-opacity));
+}
+
+.hidden {
+  display: none;
+}
+
+.error-list {
+  margin-top: var(--space-8);
+  padding-left: var(--space-20);
+  font-size: var(--font-size-sm);
+}
+
+.json-key {
+  color: #9CDCFE;
+}
+
+.json-string {
+  color: #CE9178;
+}
+
+.json-number {
+  color: #B5CEA8;
+}
+
+.json-boolean {
+  color: #569CD6;
+}
+
+.json-null {
+  color: #569CD6;
+}
+
+.feature-count {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.mode-selector {
+  display: flex;
+  gap: var(--space-16);
+  justify-content: center;
+}
+
+.mode-option {
+  flex: 1;
+  max-width: 280px;
+}
+
+.mode-option input[type="radio"] {
+  display: none;
+}
+
+.mode-option label {
+  display: block;
+  padding: var(--space-16);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  text-align: center;
+  background-color: var(--color-surface);
+}
+
+.mode-option label strong {
+  display: block;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+.mode-option label span {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.mode-option input[type="radio"]:checked + label {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-3);
+  box-shadow: var(--shadow-md);
+}
+
+.mode-option label:hover {
+  border-color: var(--color-primary-hover);
+  background-color: var(--color-bg-1);
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Conversor GeoJSON - Obras e Conservação</h1>
+            <p class="subtitle">Converta planilhas Excel/CSV em GeoJSON válido (Schema R0)</p>
+            
+            <!-- Mode Selector -->
+            <div style="margin: var(--space-24) auto; max-width: 600px;">
+                <label class="form-label" style="text-align: center; font-size: var(--font-size-lg); margin-bottom: var(--space-12);">Selecione o Modo</label>
+                <div class="mode-selector">
+                    <div class="mode-option">
+                        <input type="radio" id="modeConservacao" name="appMode" value="conservacao" checked>
+                        <label for="modeConservacao">
+                            <strong>Conservação</strong>
+                            <span>Programação Anual de Conservação - Item formato a.1.2</span>
+                        </label>
+                    </div>
+                    <div class="mode-option">
+                        <input type="radio" id="modeObras" name="appMode" value="obras">
+                        <label for="modeObras">
+                            <strong>Obras</strong>
+                            <span>Programação de Obras - Item numérico, inclui programa e subitem</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="instructions" id="modeInstructions">
+                Faça upload de um arquivo Excel/CSV ou cole os dados diretamente. O aplicativo irá converter automaticamente para o formato GeoJSON segundo o schema especificado.<br>
+                <strong>Colunas necessárias (Conservação):</strong> id, lote, rodovia, item (a.1.2), detalhamento_servico, unidade, quantidade, km_inicial, km_final, local, data_inicial, data_final, observacoes_gerais
+            </p>
+        </header>
+
+        <div class="main-layout">
+            <!-- LEFT PANEL: Input Section -->
+            <div class="panel">
+                <h2 class="panel-title">📥 Entrada de Dados</h2>
+                
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="upload">Upload de Arquivo</button>
+                    <button class="tab-button" data-tab="paste">Colar Dados</button>
+                </div>
+
+                <!-- Tab 1: Upload -->
+                <div class="tab-content active" id="upload-tab">
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="upload-icon">📁</div>
+                        <p>Arraste e solte um arquivo aqui ou clique para selecionar</p>
+                        <label for="fileInput" class="upload-label">Escolher Arquivo</label>
+                        <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv">
+                        <p style="margin-top: var(--space-12); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                            Formatos aceitos: .xlsx, .xls, .csv<br>
+                            <strong>Importante:</strong> Números podem usar vírgula ou ponto como decimal. Campo local pode ter múltiplos valores separados por ponto e vírgula (;).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Paste -->
+                <div class="tab-content" id="paste-tab">
+                    <div class="form-group">
+                        <label for="pasteArea" class="form-label">Cole os dados do Excel (Ctrl+V)</label>
+                        <textarea id="pasteArea" class="form-control" placeholder="Cole aqui os dados copiados do Excel. Inclua a linha de cabeçalho.&#10;&#10;Dicas:&#10;- Números: use vírgula (22,5) ou ponto (22.5)&#10;- Local: separe valores por ; (PISTA_LESTE; PISTA_OESTE)"></textarea>
+                    </div>
+                    <button id="parseButton" class="btn btn-primary">Processar Dados</button>
+                </div>
+
+                <!-- Data Preview -->
+                <div id="dataPreview" class="hidden">
+                    <h3 style="margin-top: var(--space-24); margin-bottom: var(--space-12); font-size: var(--font-size-lg);">📊 Visualização dos Dados</h3>
+                    <div class="preview-table-container">
+                        <table class="preview-table" id="previewTable"></table>
+                    </div>
+                    <p id="previewInfo" style="margin-top: var(--space-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);"></p>
+                </div>
+
+                <!-- Configuration Section -->
+                <div id="configSection" class="hidden" style="margin-top: var(--space-24);">
+                    <h3 style="margin-bottom: var(--space-16); font-size: var(--font-size-lg);">⚙️ Configuração</h3>
+                    
+                    <div class="form-group">
+                        <label for="dataGeracao" class="form-label">Data de Geração (RFC3339)</label>
+                        <input type="text" id="dataGeracao" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Método de Coordenadas</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="coordFromSheet" name="coordMethod" value="sheet" checked>
+                                <label for="coordFromSheet">Coordenadas na planilha (colunas longitude, latitude)</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="coordSingle" name="coordMethod" value="single">
+                                <label for="coordSingle">Coordenadas únicas para todas as features</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="coordGenerate" name="coordMethod" value="generate">
+                                <label for="coordGenerate">Gerar do km_inicial (usar primeira coordenada válida)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="singleCoordInputs" class="hidden">
+                        <div class="coord-inputs">
+                            <div class="form-group">
+                                <label for="singleLongitude" class="form-label">Longitude</label>
+                                <input type="number" id="singleLongitude" class="form-control" step="any" placeholder="-47.8919">
+                            </div>
+                            <div class="form-group">
+                                <label for="singleLatitude" class="form-label">Latitude</label>
+                                <input type="number" id="singleLatitude" class="form-control" step="any" placeholder="-21.9897">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="geometryType" class="form-label">Tipo de Geometria</label>
+                        <select id="geometryType" class="form-control">
+                            <option value="Point">Point</option>
+                            <option value="LineString">LineString</option>
+                            <option value="Polygon">Polygon</option>
+                            <option value="MultiPoint">MultiPoint</option>
+                        </select>
+                    </div>
+
+                    <button id="generateButton" class="btn btn-primary" style="width: 100%; margin-top: var(--space-16);">🔄 Gerar GeoJSON</button>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Output Section -->
+            <div class="panel">
+                <h2 class="panel-title">📤 GeoJSON Gerado</h2>
+                
+                <div id="outputSection">
+                    <div id="geojsonOutput" class="geojson-output">// O GeoJSON gerado aparecerá aqui...</div>
+                    
+                    <div class="btn-group">
+                        <button id="copyButton" class="btn btn-primary" disabled>📋 Copiar GeoJSON</button>
+                        <button id="downloadButton" class="btn btn-primary" disabled>💾 Baixar GeoJSON</button>
+                        <button id="clearButton" class="btn btn-secondary">🗑️ Limpar Tudo</button>
+                    </div>
+
+                    <div id="validationStatus" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Global state
+let parsedData = [];
+let generatedGeoJSON = null;
+let currentMode = 'conservacao'; // 'conservacao' or 'obras'
+
+// Schema constants
+const LOTE_ENUM = ['L01', 'L06', 'L07', 'L11', 'L13', 'L16', 'L19', 'L20', 'L21', 'L22', 'L23', 'L24', 'L25', 'L27', 'L28', 'L29', 'L30', 'L31', 'L32', 'L33', 'L34'];
+const UNIDADE_ENUM = ['km', 'vb', 'un', 't', 'kg', 'm', 'm2', 'm3', 'H/h', 'L', 'k'];
+const LOCAL_ENUM = ['PISTA_NORTE', 'PISTA_SUL', 'PISTA_LESTE', 'PISTA_OESTE', 'CANTEIRO_CENTRAL', 'EIXO_LESTE-OESTE', 'EIXO_NORTE-SUL', 'PISTA_EXTERNA', 'PISTA_INTERNA', 'MARGINAL_SUL', 'MARGINAL_NORTE', 'MARGINAL_LESTE', 'MARGINAL_OESTE', 'DISPOSITIVO', 'ALÇA', 'INTERLIGAÇÃO', 'FX_DOM', 'FX_NAO_EDIF'];
+const PROGRAMA_ENUM = ['CAPEX', 'NS'];
+
+// Mode-specific required fields
+const REQUIRED_FIELDS_CONSERVACAO = ['id', 'lote', 'rodovia', 'item', 'detalhamento_servico', 'unidade', 'quantidade', 'km_inicial', 'km_final', 'local', 'data_inicial', 'data_final'];
+const REQUIRED_FIELDS_OBRAS = ['id', 'lote', 'rodovia', 'programa', 'item', 'subitem', 'detalhamento_servico', 'unidade', 'quantidade', 'km_inicial', 'km_final', 'local', 'data_inicial', 'data_final'];
+
+function getRequiredFields() {
+    return currentMode === 'conservacao' ? REQUIRED_FIELDS_CONSERVACAO : REQUIRED_FIELDS_OBRAS;
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    initializeTabs();
+    initializeFileUpload();
+    initializeCoordMethodToggle();
+    initializeButtons();
+    initializeModeSelector();
+    setDefaultDateTime();
+    updateModeInstructions();
+});
+
+function setDefaultDateTime() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const offsetHours = Math.abs(Math.floor(offset / 60));
+    const offsetMinutes = Math.abs(offset % 60);
+    const offsetSign = offset <= 0 ? '+' : '-';
+    
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    const rfc3339 = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+    document.getElementById('dataGeracao').value = rfc3339;
+}
+
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.getAttribute('data-tab');
+            
+            // Update active states
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        });
+    });
+}
+
+function initializeFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const parseButton = document.getElementById('parseButton');
+    
+    fileInput.addEventListener('change', handleFileSelect);
+    parseButton.addEventListener('click', handlePastedData);
+    
+    // Drag and drop
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+    
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('dragover');
+    });
+    
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleFile(file);
+    }
+}
+
+function handleFile(file) {
+    const fileName = file.name;
+    const fileExtension = fileName.split('.').pop().toLowerCase();
+    
+    if (fileExtension === 'csv') {
+        parseCSVFile(file);
+    } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+        parseExcelFile(file);
+    } else {
+        showStatus('Formato de arquivo não suportado. Use .xlsx, .xls ou .csv', 'error');
+    }
+}
+
+function parseCSVFile(file) {
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+            parsedData = results.data;
+            displayDataPreview();
+            showStatus(`Arquivo CSV carregado com sucesso! ${parsedData.length} linhas encontradas.`, 'success');
+        },
+        error: (error) => {
+            showStatus(`Erro ao processar CSV: ${error.message}`, 'error');
+        }
+    });
+}
+
+function parseExcelFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            parsedData = jsonData;
+            displayDataPreview();
+            showStatus(`Arquivo Excel carregado com sucesso! ${parsedData.length} linhas encontradas.`, 'success');
+        } catch (error) {
+            showStatus(`Erro ao processar Excel: ${error.message}`, 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function handlePastedData() {
+    const pasteArea = document.getElementById('pasteArea');
+    const text = pasteArea.value.trim();
+    
+    if (!text) {
+        showStatus('Por favor, cole os dados na área de texto.', 'warning');
+        return;
+    }
+    
+    // Try to parse as TSV (tab-separated) or CSV
+    Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        delimiter: text.includes('\t') ? '\t' : ',',
+        complete: (results) => {
+            parsedData = results.data;
+            displayDataPreview();
+            showStatus(`Dados processados com sucesso! ${parsedData.length} linhas encontradas.`, 'success');
+        },
+        error: (error) => {
+            showStatus(`Erro ao processar dados: ${error.message}`, 'error');
+        }
+    });
+}
+
+function displayDataPreview() {
+    const previewSection = document.getElementById('dataPreview');
+    const previewTable = document.getElementById('previewTable');
+    const previewInfo = document.getElementById('previewInfo');
+    const configSection = document.getElementById('configSection');
+    
+    if (parsedData.length === 0) {
+        previewSection.classList.add('hidden');
+        return;
+    }
+    
+    // Show config section
+    configSection.classList.remove('hidden');
+    
+    // Get headers
+    const headers = Object.keys(parsedData[0]);
+    
+    // Build table
+    let tableHTML = '<thead><tr>';
+    headers.forEach(header => {
+        tableHTML += `<th>${header}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+    
+    // Show first 10 rows
+    const rowsToShow = Math.min(10, parsedData.length);
+    for (let i = 0; i < rowsToShow; i++) {
+        tableHTML += '<tr>';
+        headers.forEach(header => {
+            const value = parsedData[i][header] || '';
+            tableHTML += `<td>${value}</td>`;
+        });
+        tableHTML += '</tr>';
+    }
+    tableHTML += '</tbody>';
+    
+    previewTable.innerHTML = tableHTML;
+    previewInfo.textContent = `Mostrando ${rowsToShow} de ${parsedData.length} linhas`;
+    previewSection.classList.remove('hidden');
+}
+
+function initializeCoordMethodToggle() {
+    const radioButtons = document.querySelectorAll('input[name="coordMethod"]');
+    const singleCoordInputs = document.getElementById('singleCoordInputs');
+    
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'single') {
+                singleCoordInputs.classList.remove('hidden');
+            } else {
+                singleCoordInputs.classList.add('hidden');
+            }
+        });
+    });
+}
+
+function initializeButtons() {
+    document.getElementById('generateButton').addEventListener('click', generateGeoJSON);
+    document.getElementById('copyButton').addEventListener('click', copyToClipboard);
+    document.getElementById('downloadButton').addEventListener('click', downloadGeoJSON);
+    document.getElementById('clearButton').addEventListener('click', clearAll);
+}
+
+function initializeModeSelector() {
+    const modeRadios = document.querySelectorAll('input[name="appMode"]');
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            updateModeInstructions();
+            // If data already loaded, show warning about mode change
+            if (parsedData.length > 0) {
+                showStatus('Modo alterado. Verifique se os dados correspondem ao novo esquema.', 'info');
+            }
+        });
+    });
+}
+
+function updateModeInstructions() {
+    const instructions = document.getElementById('modeInstructions');
+    if (currentMode === 'conservacao') {
+        instructions.innerHTML = `
+            Faça upload de um arquivo Excel/CSV ou cole os dados diretamente. O aplicativo irá converter automaticamente para o formato GeoJSON segundo o schema especificado.<br>
+            <strong>Colunas necessárias (Conservação):</strong> id, lote, rodovia, item (formato a.1.2), detalhamento_servico, unidade, quantidade, km_inicial, km_final, local, data_inicial, data_final, observacoes_gerais<br>
+            <strong>Dica Local:</strong> Separe múltiplos valores por ponto e vírgula (;). Exemplo: PISTA_LESTE; PISTA_OESTE<br>
+            <strong>Dica Números:</strong> Use vírgula (,) ou ponto (.) como separador decimal. Exemplo: 22,5 ou 22.5
+        `;
+    } else {
+        instructions.innerHTML = `
+            Faça upload de um arquivo Excel/CSV ou cole os dados diretamente. O aplicativo irá converter automaticamente para o formato GeoJSON segundo o schema especificado.<br>
+            <strong>Colunas necessárias (Obras):</strong> id, lote, rodovia, programa (CAPEX/NS), item (numérico), subitem (numérico), detalhamento_servico, unidade, quantidade, km_inicial, km_final, local, data_inicial, data_final, observacoes_gerais<br>
+            <strong>Dica Local:</strong> Separe múltiplos valores por ponto e vírgula (;). Exemplo: PISTA_LESTE; PISTA_OESTE<br>
+            <strong>Dica Números:</strong> Use vírgula (,) ou ponto (.) como separador decimal. Exemplo: 22,5 ou 22.5
+        `;
+    }
+}
+
+function generateGeoJSON() {
+    if (parsedData.length === 0) {
+        showStatus('Nenhum dado para processar. Carregue um arquivo primeiro.', 'warning');
+        return;
+    }
+    
+    const coordMethod = document.querySelector('input[name="coordMethod"]:checked').value;
+    const geometryType = document.getElementById('geometryType').value;
+    const dataGeracao = document.getElementById('dataGeracao').value;
+    
+    let singleLongitude, singleLatitude;
+    if (coordMethod === 'single') {
+        singleLongitude = parseFloat(document.getElementById('singleLongitude').value);
+        singleLatitude = parseFloat(document.getElementById('singleLatitude').value);
+        
+        if (isNaN(singleLongitude) || isNaN(singleLatitude)) {
+            showStatus('Por favor, insira coordenadas válidas.', 'error');
+            return;
+        }
+    }
+    
+    const features = [];
+    const errors = [];
+    
+    parsedData.forEach((row, index) => {
+        try {
+            const feature = buildFeature(row, coordMethod, geometryType, singleLongitude, singleLatitude);
+            features.push(feature);
+        } catch (error) {
+            errors.push(`Linha ${index + 1}: ${error.message}`);
+        }
+    });
+    
+    if (errors.length > 0) {
+        showStatus(`Avisos durante geração (${errors.length} erros)`, 'warning', errors);
+    }
+    
+    generatedGeoJSON = {
+        type: 'FeatureCollection',
+        crs: {
+            type: 'name',
+            properties: {
+                name: 'urn:ogc:def:crs:EPSG::4674'
+            }
+        },
+        metadata: {
+            schema_version: 'R0',
+            data_geracao: dataGeracao
+        },
+        features: features
+    };
+    
+    displayGeoJSON();
+    validateGeoJSON();
+    
+    if (errors.length === 0) {
+        showStatus(`GeoJSON gerado com sucesso! ${features.length} features criadas.`, 'success');
+    }
+    
+    // Enable buttons
+    document.getElementById('copyButton').disabled = false;
+    document.getElementById('downloadButton').disabled = false;
+}
+
+// Convert Brazilian number format (comma decimal separator) to standard number
+function parseBrazilianNumber(value) {
+    if (typeof value === 'number') return Math.round(value * 1000) / 1000;
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value !== 'string') value = String(value);
+    // Replace comma with period for decimal separator
+    const cleaned = value.replace(',', '.');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : Math.round(num * 1000) / 1000; // Keep up to 3 decimal places
+}
+
+function parseNumber(value) {
+    return parseBrazilianNumber(value);
+}
+
+function parseDate(dateValue) {
+    if (!dateValue) return '';
+    
+    const dateStr = String(dateValue).trim();
+    if (!dateStr) return '';
+    
+    // Already in YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return dateStr;
+    }
+    
+    // Try to parse as Excel date (number of days since 1900-01-01)
+    if (/^\d+(\.\d+)?$/.test(dateStr)) {
+        const excelDate = parseFloat(dateStr);
+        const date = new Date((excelDate - 25569) * 86400 * 1000);
+        return date.toISOString().split('T')[0];
+    }
+    
+    // Try common date formats: DD/MM/YYYY or MM/DD/YYYY
+    if (/\d{1,2}\/\d{1,2}\/\d{4}/.test(dateStr)) {
+        const parts = dateStr.split('/');
+        // Assume DD/MM/YYYY for Brazilian format
+        if (parseInt(parts[0]) > 12) {
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            return date.toISOString().split('T')[0];
+        } else {
+            // Could be MM/DD/YYYY, try DD/MM/YYYY first
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            return date.toISOString().split('T')[0];
+        }
+    }
+    
+    // Try ISO format parsing
+    try {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+        }
+    } catch (e) {
+        // Fall through
+    }
+    
+    return dateStr; // Return as-is if can't parse
+}
+
+function buildFeature(row, coordMethod, geometryType, singleLon, singleLat) {
+    // Normalize field names (case-insensitive)
+    const normalizedRow = {};
+    Object.keys(row).forEach(key => {
+        normalizedRow[key.toLowerCase().trim()] = row[key];
+    });
+    
+    // Get coordinates
+    let longitude, latitude;
+    
+    if (coordMethod === 'single') {
+        longitude = singleLon;
+        latitude = singleLat;
+    } else if (coordMethod === 'sheet') {
+        longitude = parseFloat(normalizedRow.longitude || normalizedRow.lon);
+        latitude = parseFloat(normalizedRow.latitude || normalizedRow.lat);
+    } else if (coordMethod === 'generate') {
+        // Use first valid coordinate found or default
+        longitude = parseFloat(normalizedRow.longitude || normalizedRow.lon || -47.8919);
+        latitude = parseFloat(normalizedRow.latitude || normalizedRow.lat || -21.9897);
+    }
+    
+    // Build geometry
+    let geometry;
+    if (geometryType === 'Point') {
+        geometry = {
+            type: 'Point',
+            coordinates: [longitude, latitude]
+        };
+    } else if (geometryType === 'LineString') {
+        // Generate LineString with 3 points along the route
+        const kmInicial = parseFloat(normalizedRow.km_inicial) || 0;
+        const kmFinal = parseFloat(normalizedRow.km_final) || kmInicial + 1;
+        const kmRange = kmFinal - kmInicial;
+        
+        geometry = {
+            type: 'LineString',
+            coordinates: [
+                [longitude, latitude],
+                [longitude + (kmRange * 0.0005), latitude + (kmRange * 0.0005)],
+                [longitude + (kmRange * 0.001), latitude + (kmRange * 0.001)]
+            ]
+        };
+    } else if (geometryType === 'Polygon') {
+        geometry = {
+            type: 'Polygon',
+            coordinates: [[
+                [longitude, latitude],
+                [longitude + 0.01, latitude],
+                [longitude + 0.01, latitude + 0.01],
+                [longitude, latitude + 0.01],
+                [longitude, latitude]
+            ]]
+        };
+    } else if (geometryType === 'MultiPoint') {
+        // Generate multiple points along the route
+        geometry = {
+            type: 'MultiPoint',
+            coordinates: [
+                [longitude, latitude],
+                [longitude + 0.01, latitude + 0.02],
+                [longitude + 0.02, latitude + 0.03]
+            ]
+        };
+    }
+    
+    // Parse local field (semicolon-separated to array)
+    let localArray = [];
+    if (normalizedRow.local) {
+        const localStr = String(normalizedRow.local);
+        // Split by semicolon, trim whitespace, and filter empty values
+        localArray = localStr.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    }
+    
+    // Parse observacoes_gerais - null if empty, string otherwise
+    let observacoes = normalizedRow.observacoes_gerais || normalizedRow.observacoes || '';
+    observacoes = String(observacoes).trim();
+    if (!observacoes || observacoes.toLowerCase() === 'null' || observacoes === '') {
+        observacoes = null;
+    }
+    
+    // Build properties based on mode
+    const properties = {};
+    
+    if (currentMode === 'conservacao') {
+        // Conservação mode: item is string (a.1.2 format)
+        properties.id = normalizedRow.id || '';
+        properties.lote = normalizedRow.lote || '';
+        properties.rodovia = normalizedRow.rodovia || '';
+        properties.item = String(normalizedRow.item || '').trim();
+        properties.detalhamento_servico = normalizedRow.detalhamento_servico || normalizedRow.detalhamento || '';
+        properties.unidade = normalizedRow.unidade || '';
+        properties.quantidade = parseNumber(normalizedRow.quantidade);
+        properties.km_inicial = parseNumber(normalizedRow.km_inicial);
+        properties.km_final = parseNumber(normalizedRow.km_final);
+        properties.local = localArray;
+        properties.data_inicial = parseDate(normalizedRow.data_inicial);
+        properties.data_final = parseDate(normalizedRow.data_final);
+        properties.observacoes_gerais = observacoes;
+    } else {
+        // Obras mode: item and subitem are numeric, includes programa
+        properties.id = normalizedRow.id || '';
+        properties.lote = normalizedRow.lote || '';
+        properties.rodovia = normalizedRow.rodovia || '';
+        properties.programa = normalizedRow.programa || '';
+        properties.item = parseInt(normalizedRow.item) || 1;
+        properties.subitem = parseInt(normalizedRow.subitem || normalizedRow.sub_item) || 1;
+        properties.detalhamento_servico = normalizedRow.detalhamento_servico || normalizedRow.detalhamento || '';
+        properties.unidade = normalizedRow.unidade || '';
+        properties.quantidade = parseNumber(normalizedRow.quantidade);
+        properties.km_inicial = parseNumber(normalizedRow.km_inicial);
+        properties.km_final = parseNumber(normalizedRow.km_final);
+        properties.local = localArray;
+        properties.data_inicial = parseDate(normalizedRow.data_inicial);
+        properties.data_final = parseDate(normalizedRow.data_final);
+        properties.observacoes_gerais = observacoes;
+    }
+    
+    return {
+        type: 'Feature',
+        geometry: geometry,
+        properties: properties
+    };
+}
+
+function displayGeoJSON() {
+    const output = document.getElementById('geojsonOutput');
+    const formatted = JSON.stringify(generatedGeoJSON, null, 2);
+    output.textContent = formatted;
+}
+
+function validateGeoJSON() {
+    const validationStatus = document.getElementById('validationStatus');
+    const errors = [];
+    
+    if (!generatedGeoJSON || !generatedGeoJSON.features) {
+        validationStatus.innerHTML = '<div class="status-message error">❌ GeoJSON inválido</div>';
+        validationStatus.classList.remove('hidden');
+        return;
+    }
+    
+    const requiredFields = getRequiredFields();
+    
+    generatedGeoJSON.features.forEach((feature, index) => {
+        const props = feature.properties;
+        
+        // Check required fields
+        requiredFields.forEach(field => {
+            if (!props[field] && props[field] !== 0) {
+                errors.push(`Feature ${index + 1}: Campo obrigatório "${field}" ausente`);
+            }
+        });
+        
+        // Mode-specific validations
+        if (currentMode === 'conservacao') {
+            // Validate item format (a.1.2 pattern)
+            if (props.item && !/^[a-z](\.\d+)+$/.test(props.item)) {
+                errors.push(`Feature ${index + 1}: Item "${props.item}" deve seguir o padrão a.1.2 (letra.números)`);
+            }
+        } else {
+            // Validate programa
+            if (props.programa && !PROGRAMA_ENUM.includes(props.programa)) {
+                errors.push(`Feature ${index + 1}: Programa "${props.programa}" deve ser CAPEX ou NS`);
+            }
+            
+            // Validate item is numeric
+            if (typeof props.item !== 'number') {
+                errors.push(`Feature ${index + 1}: Item deve ser numérico no modo Obras`);
+            }
+            
+            // Validate subitem is numeric
+            if (typeof props.subitem !== 'number') {
+                errors.push(`Feature ${index + 1}: Subitem deve ser numérico no modo Obras`);
+            }
+        }
+        
+        // Validate lote pattern
+        if (props.lote && !LOTE_ENUM.includes(props.lote)) {
+            errors.push(`Feature ${index + 1}: Lote "${props.lote}" não está na lista permitida`);
+        }
+        
+        // Validate unidade
+        if (props.unidade && !UNIDADE_ENUM.includes(props.unidade)) {
+            errors.push(`Feature ${index + 1}: Unidade "${props.unidade}" não está na lista permitida`);
+        }
+        
+        // Validate local array
+        if (props.local && Array.isArray(props.local)) {
+            props.local.forEach(loc => {
+                if (!LOCAL_ENUM.includes(loc)) {
+                    errors.push(`Feature ${index + 1}: Local "${loc}" não está na lista permitida. Valores aceitos: ${LOCAL_ENUM.join(', ')}`);
+                }
+            });
+        } else if (props.local) {
+            errors.push(`Feature ${index + 1}: Local deve ser um array de valores separados por ponto e vírgula (;)`);
+        }
+        
+        // Validate km range
+        if (props.km_final < props.km_inicial) {
+            const kmInicialDisplay = String(props.km_inicial).replace('.', ',');
+            const kmFinalDisplay = String(props.km_final).replace('.', ',');
+            errors.push(`Feature ${index + 1}: km_final (${kmFinalDisplay}) deve ser >= km_inicial (${kmInicialDisplay})`);
+        }
+    });
+    
+    if (errors.length === 0) {
+        const modeName = currentMode === 'conservacao' ? 'Conservação' : 'Obras';
+        validationStatus.innerHTML = `
+            <div class="status-message success">
+                ✅ GeoJSON válido (${modeName})! <span class="feature-count">${generatedGeoJSON.features.length}</span> features geradas.
+            </div>
+        `;
+    } else {
+        const errorList = errors.slice(0, 10).map(e => `<li>${e}</li>`).join('');
+        const moreErrors = errors.length > 10 ? `<li>... e mais ${errors.length - 10} erros</li>` : '';
+        validationStatus.innerHTML = `
+            <div class="status-message warning">
+                ⚠️ Validação encontrou ${errors.length} problema(s):
+                <ul class="error-list">${errorList}${moreErrors}</ul>
+            </div>
+        `;
+    }
+    
+    validationStatus.classList.remove('hidden');
+}
+
+function copyToClipboard() {
+    if (!generatedGeoJSON) return;
+    
+    const text = JSON.stringify(generatedGeoJSON, null, 2);
+    navigator.clipboard.writeText(text).then(() => {
+        showStatus('GeoJSON copiado para a área de transferência!', 'success');
+    }).catch(err => {
+        showStatus('Erro ao copiar: ' + err.message, 'error');
+    });
+}
+
+function downloadGeoJSON() {
+    if (!generatedGeoJSON) return;
+    
+    const text = JSON.stringify(generatedGeoJSON, null, 2);
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const fileName = currentMode === 'conservacao' ? 'programacao_anual_conservacao.geojson' : 'programacao_obras.geojson';
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showStatus('GeoJSON baixado com sucesso!', 'success');
+}
+
+function clearAll() {
+    if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+        parsedData = [];
+        generatedGeoJSON = null;
+        
+        document.getElementById('fileInput').value = '';
+        document.getElementById('pasteArea').value = '';
+        document.getElementById('dataPreview').classList.add('hidden');
+        document.getElementById('configSection').classList.add('hidden');
+        document.getElementById('geojsonOutput').textContent = '// O GeoJSON gerado aparecerá aqui...';
+        document.getElementById('validationStatus').classList.add('hidden');
+        document.getElementById('copyButton').disabled = true;
+        document.getElementById('downloadButton').disabled = true;
+        
+        setDefaultDateTime();
+        showStatus('Dados limpos com sucesso!', 'info');
+    }
+}
+
+function showStatus(message, type, errorList = []) {
+    // Create temporary status message
+    const statusDiv = document.createElement('div');
+    statusDiv.className = `status-message ${type}`;
+    
+    let icon = '✅';
+    if (type === 'error') icon = '❌';
+    else if (type === 'warning') icon = '⚠️';
+    else if (type === 'info') icon = 'ℹ️';
+    
+    let content = `${icon} ${message}`;
+    
+    if (errorList.length > 0) {
+        const errorItems = errorList.slice(0, 5).map(e => `<li>${e}</li>`).join('');
+        const moreErrors = errorList.length > 5 ? `<li>... e mais ${errorList.length - 5} erros</li>` : '';
+        content += `<ul class="error-list">${errorItems}${moreErrors}</ul>`;
+    }
+    
+    statusDiv.innerHTML = content;
+    
+    // Insert at top of output section
+    const outputSection = document.getElementById('outputSection');
+    const existing = outputSection.querySelector('.status-message.temporary');
+    if (existing) existing.remove();
+    
+    statusDiv.classList.add('temporary');
+    outputSection.insertBefore(statusDiv, outputSection.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (statusDiv.classList.contains('temporary')) {
+            statusDiv.remove();
+        }
+    }, 5000);
+}
+    </script>
+</body>
+</html>
